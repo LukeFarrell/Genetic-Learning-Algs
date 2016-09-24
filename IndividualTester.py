@@ -148,7 +148,7 @@ def Test(TopSpecies, testStart, testEnd, shareCount, Investment):
         print "TEST GUESSED    : " , (Environment.getPortfolios()["p0"].getCorrectList().count(1)+Environment.getPortfolios()["p0"].getCorrectList().count(-1)*1.0)/len(Environment.getPortfolios()["p0"].getCorrectList())
         print "TEST BALANCE    : " ,  Environment.getPortfolios()["p0"].getBalanceList()[-1]
 
-        return ((Environment.getPortfolios()["p0"].getCorrectList().count(1)*1.0)/(len(Environment.getPortfolios()["p0"].getCorrectList()))),Environment.getPortfolios()["p0"].getBalanceList()[-1]
+        return (Environment.getPortfolios()["p0"].getCorrectList().count(1)*1.0)/len(Environment.getPortfolios()["p0"].getCorrectList()),Environment.getPortfolios()["p0"].getBalanceList()[-1]
 
 if __name__ == '__main__':
     IndividualTester(TopSpecies)
