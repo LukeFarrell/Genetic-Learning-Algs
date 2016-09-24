@@ -37,7 +37,6 @@ class Portfolio(object):
     def buyStock(self,ticker,amount,price):
         if self.balance-(amount*price)<0:
             # print self.balance, amount, price, self.getShareFactor(),self.balance-(amount*price)
-            print "Transaction failed."
             return 0
         self.balance-=amount*price
         if ticker not in self.stocksLong.keys():
@@ -62,7 +61,6 @@ class Portfolio(object):
             
     def shortStock(self,ticker,amount,price):
         if self.balance-(amount*price)<0:
-            print "Transaction failed."
             return 0
         self.balance+=amount*price
         if ticker not in self.stocksShort.keys():

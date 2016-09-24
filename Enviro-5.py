@@ -20,24 +20,32 @@ import multiprocessing as mp
 from functools import partial
 import time as time
 
-def MultiProcess1(Environment, inputs, startPrice, endPrice, stockList, day):
-    # Get boolean statements for the day   
-    for portfolio in Environment.getPortfolios().keys():
+def MultiProcess1(portDict, Environment, startDay, DAYS, inputList, startPriceList, endPriceList, stockList, portfolio):
+    for day in range(startDay, DAYS):
+        inputs=inputList[day]  
+        startPrice=startPriceList[day]
+        endPrice=endPriceList[day]
         for gene in Environment.getPortfolios()[portfolio].getSpecies().getGenes().keys():
             Environment.getPortfolios()[portfolio].getSpecies().getGenes()[gene].makeBoolean(inputs)    
-            
     # Get species output and add corresponding behavior
-    for portfolio in Environment.getPortfolios().keys():
+    for day in range(startDay, DAYS):
+        inputs=inputList[day]  
+        startPrice=startPriceList[day]
+        endPrice=endPriceList[day]
         # print Environment.getPortfolios()[portfolio].getBalance()/(0.0+startPrice),Environment.getPortfolios()[portfolio].getShareFactor()
         Environment.getPortfolios()[portfolio].addBehavior(Environment.getPortfolios()[portfolio].getSpecies().getOutput() > Environment.getPortfolios()[portfolio].getSpecies().getRightThresh() , ("Buy", "LUV",int(Environment.getPortfolios()[portfolio].getShareFactor()*(Environment.getPortfolios()[portfolio].getBalance()/(0.0+startPrice))),startPrice))
         Environment.getPortfolios()[portfolio].addBehavior(Environment.getPortfolios()[portfolio].getSpecies().getOutput() < Environment.getPortfolios()[portfolio].getSpecies().getLeftThresh(), ("Short", "LUV",int(Environment.getPortfolios()[portfolio].getShareFactor()*(Environment.getPortfolios()[portfolio].getBalance()/(0.0+startPrice))),startPrice))
         Environment.getPortfolios()[portfolio].addGeneCorrect(endPrice-startPrice)
-    #Go through with actions, sellBack at end of day and add balance to balanceList
-
-    for portfolio in Environment.getPortfolios().keys():
+#Go through with actions, sellBack at end of day and add balance to balanceList
+    for day in range(startDay, DAYS):
+        inputs=inputList[day]  
+        startPrice=startPriceList[day]
+        endPrice=endPriceList[day]
         Environment.getPortfolios()[portfolio].makeActions(startPrice)
         Environment.getPortfolios()[portfolio].sellBack(stockList,endPrice)
         Environment.getPortfolios()[portfolio].addBalance(Environment.getPortfolios()[portfolio].balance)  
+    portDict[portfolio] =  Environment.getPortfolios()[portfolio]
+
 
 def Enviro(stockList,Investment,numSpecies, genCount, shareCount, trainStart, trainEnd, testStart, testEnd, SaveNew, geneTest, evolutionPlot):
     avg=[]
@@ -113,40 +121,46 @@ def Enviro(stockList,Investment,numSpecies, genCount, shareCount, trainStart, tr
 # Start loop of days and generations     
         
     for gen in range(genCount):
-        print "year", gen
         t1 = time.time()
-        for portfolio in Environment.getPortfolios().keys():
-            for day in range(startDay, DAYS):
-                inputs=inputList[day]  
-                startPrice=startPriceList[day]
-                endPrice=endPriceList[day]
-                for gene in Environment.getPortfolios()[portfolio].getSpecies().getGenes().keys():
-                    Environment.getPortfolios()[portfolio].getSpecies().getGenes()[gene].makeBoolean(inputs)    
-        print time.time()-t1
-        # Get species output and add corresponding behavior
-        t2 = time.time()
-        for portfolio in Environment.getPortfolios().keys():
-            for day in range(startDay, DAYS):
-                inputs=inputList[day]  
-                startPrice=startPriceList[day]
-                endPrice=endPriceList[day]
-                # print Environment.getPortfolios()[portfolio].getBalance()/(0.0+startPrice),Environment.getPortfolios()[portfolio].getShareFactor()
-                Environment.getPortfolios()[portfolio].addBehavior(Environment.getPortfolios()[portfolio].getSpecies().getOutput() > Environment.getPortfolios()[portfolio].getSpecies().getRightThresh() , ("Buy", "LUV",int(Environment.getPortfolios()[portfolio].getShareFactor()*(Environment.getPortfolios()[portfolio].getBalance()/(0.0+startPrice))),startPrice))
-                Environment.getPortfolios()[portfolio].addBehavior(Environment.getPortfolios()[portfolio].getSpecies().getOutput() < Environment.getPortfolios()[portfolio].getSpecies().getLeftThresh(), ("Short", "LUV",int(Environment.getPortfolios()[portfolio].getShareFactor()*(Environment.getPortfolios()[portfolio].getBalance()/(0.0+startPrice))),startPrice))
-                Environment.getPortfolios()[portfolio].addGeneCorrect(endPrice-startPrice)
-        #Go through with actions, sellBack at end of day and add balance to balanceList
-        print time.time()-t2
-        t3 = time.time()
-        for portfolio in Environment.getPortfolios().keys():
-            for day in range(startDay, DAYS):
-                inputs=inputList[day]  
-                startPrice=startPriceList[day]
-                endPrice=endPriceList[day]
-                Environment.getPortfolios()[portfolio].makeActions(startPrice)
-                Environment.getPortfolios()[portfolio].sellBack(stockList,endPrice)
-                Environment.getPortfolios()[portfolio].addBalance(Environment.getPortfolios()[portfolio].balance)  
-        print time.time()-t3
+        # for portfolio in Environment.getPortfolios():
+        #     for day in range(startDay, DAYS):
+        #         inputs=inputList[day]  
+        #         startPrice=startPriceList[day]
+        #         endPrice=endPriceList[day]
+        #         for gene in Environment.getPortfolios()[portfolio].getSpecies().getGenes().keys():
+        #             Environment.getPortfolios()[portfolio].getSpecies().getGenes()[gene].makeBoolean(inputs)    
             
+        #     # Get species output and add corresponding behavior
+        #     for day in range(startDay, DAYS):
+        #         inputs=inputList[day]  
+        #         startPrice=startPriceList[day]
+        #         endPrice=endPriceList[day]
+        #         # print Environment.getPortfolios()[portfolio].getBalance()/(0.0+startPrice),Environment.getPortfolios()[portfolio].getShareFactor()
+        #         Environment.getPortfolios()[portfolio].addBehavior(Environment.getPortfolios()[portfolio].getSpecies().getOutput() > Environment.getPortfolios()[portfolio].getSpecies().getRightThresh() , ("Buy", "LUV",int(Environment.getPortfolios()[portfolio].getShareFactor()*(Environment.getPortfolios()[portfolio].getBalance()/(0.0+startPrice))),startPrice))
+        #         Environment.getPortfolios()[portfolio].addBehavior(Environment.getPortfolios()[portfolio].getSpecies().getOutput() < Environment.getPortfolios()[portfolio].getSpecies().getLeftThresh(), ("Short", "LUV",int(Environment.getPortfolios()[portfolio].getShareFactor()*(Environment.getPortfolios()[portfolio].getBalance()/(0.0+startPrice))),startPrice))
+        #         Environment.getPortfolios()[portfolio].addGeneCorrect(endPrice-startPrice)
+        
+        # #Go through with actions, sellBack at end of day and add balance to balanceList
+        #     for day in range(startDay, DAYS):
+        #         inputs=inputList[day]  
+        #         startPrice=startPriceList[day]
+        #         endPrice=endPriceList[day]
+        #         Environment.getPortfolios()[portfolio].makeActions(startPrice)
+        #         Environment.getPortfolios()[portfolio].sellBack(stockList,endPrice)
+        #         Environment.getPortfolios()[portfolio].addBalance(Environment.getPortfolios()[portfolio].balance)  
+        
+        # t1 = time.time()
+        print "year", gen+1
+        manager = mp.Manager()
+        portDict = manager.dict()
+        for portfolio in Environment.getPortfolios().keys():
+            p = mp.Process(target = MultiProcess1, args = (portDict, Environment, startDay, DAYS, inputList, startPriceList, endPriceList, stockList, portfolio))
+            p.start()
+        p.join()
+
+        for port in portDict.keys():
+            Environment.getPortfolios()[port] = portDict[port]
+
 #Get fitness of species
         for portfolio in Environment.getPortfolios().keys():
             # fitness[portfolio]=Environment.getPortfolios()[portfolio].balanceList[-1]
@@ -184,6 +198,9 @@ def Enviro(stockList,Investment,numSpecies, genCount, shareCount, trainStart, tr
 
         for valTop in range(len(top)):
             Environment.getPortfolios()[top[valTop][0]].reset(pInvest)
+
+        portDict.clear()
+        print time.time()-t1
                                 
     print TOPV, "Fitness"
     if(len(Environment.getPortfolios()[TOP].getCorrectList())==0):
@@ -232,11 +249,11 @@ if __name__ == '__main__':
     #Number of Species 
     numSpecies = 1000
     #Number of Generation
-    genCount = 10
+    genCount = 5
     #Percent of Shares to trade each day
     shareCount = 0.8
     #Train Environment End Day (Last possible day)
-    trainEnd = 210
+    trainEnd = 400
     #Train Environment Start Day (Day Right before Testing)
     trainStart = 200
     #Test The winner on Environment End Day (less than Train)
