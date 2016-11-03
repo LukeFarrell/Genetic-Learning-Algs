@@ -77,13 +77,13 @@ class Gene(object):
         b=gene.getGene()
         c=[]
         c.append(Gene(a[2],a[0],a[1],b[3]))
-        c.append(Gene(a[2],a[0],b[1],a[3]))
+        # c.append(Gene(a[2],a[0],b[1],a[3]))
         c.append(Gene(a[2],a[0],b[1],b[3]))
         c.append(Gene(a[2],b[0],a[1],a[3]))
-        c.append(Gene(a[2],b[0],a[1],b[3]))
+        # c.append(Gene(a[2],b[0],a[1],b[3]))
         c.append(Gene(a[2],b[0],b[1],a[3]))
         
-        d = random.randrange(0,6)
+        d = random.randrange(0,4)
         return c[d]
 
     def testChildren(self,c):
@@ -142,6 +142,16 @@ class Gene(object):
             return 1*self.weight
         else:
             return -1*self.weight
+    def equals(self,other):
+        if(self.left!=other.left):
+            return False
+        if(self.right!=other.right):
+            return False
+        if(self.delimeter!=other.delimeter):
+            return False
+        if(self.weight!=other.weight):
+            return False
+        return True
 if __name__ == '__main__':
 
     inputs={}

@@ -37,7 +37,6 @@ class Portfolio(object):
     def buyStock(self,ticker,amount,price):
         if self.balance-(amount*price)<0:
             # print self.balance, amount, price, self.getShareFactor(),self.balance-(amount*price)
-            print "Transaction failed."
             return 0
         self.balance-=amount*price
         if ticker not in self.stocksLong.keys():
@@ -62,7 +61,6 @@ class Portfolio(object):
             
     def shortStock(self,ticker,amount,price):
         if self.balance-(amount*price)<0:
-            print "Transaction failed."
             return 0
         self.balance+=amount*price
         if ticker not in self.stocksShort.keys():
@@ -170,7 +168,8 @@ class Portfolio(object):
         return "Balance: $" + str(self.balance)
     def resetAll(self,balance):
         self.balance=balance
-#         self.balanceList=[]
+        self.balanceList=[]
+        self.correctList = []
         self.addBalance(balance)
         self.stocksLong={}
         self.stocksShort={}
@@ -183,7 +182,8 @@ class Portfolio(object):
         self.outputList=[]
         
     def reset(self,balance):
-#         self.balanceList=[]
+        self.balanceList=[]
+        self.correctList=[]
         self.balance=balance
         self.behaviorList={}
         self.addBalance(balance)
@@ -210,6 +210,38 @@ class Portfolio(object):
         return self.shareCountList
     def getOutputList(self):
         return self.outputList
+    def copy(self):
+    #      stocksLong={}
+    # stocksShort={}
+    # transactions={}
+    # behaviorList={}
+    # balanceList=[]
+    # correctList=[]
+    # shareCountList=[]
+    # outputList=[]
+    # geneCorrectList={}
+    # inputList={}
+    # startPriceList={}
+    # endPriceList={}
+    # balance=0
+    # species=None
+
+        a = Portfolio(self.balance)
+        a.balanceList=self.balanceList.copy()
+        a.correctList=self.correctList.copy()
+        a.behaviorList=self.behaviorList.copy()
+        a.shareCountList=self.shareCountList.copy()
+        a.species=self.species.copy()
+        a.outputList=self.outputList.copy()
+        a.geneCorrectList=self.geneCorrectList.copy()
+        a.inputList=self.inputList.copy()
+        a.startPriceList=self.startPriceList.copy()
+        a.endPriceList=self.endPriceList.copy()
+        a.transactions=self.transactions.copy()
+
+        return a
+
+
         
 if __name__ == '__main__':
     p1=Portfolio(10000)

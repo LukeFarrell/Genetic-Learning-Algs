@@ -15,9 +15,20 @@ import matplotlib.pyplot as plt
 from numpy import average
 import Enviro
 import pickle
+import csv
 
-def Test(TopSpecies, testStart, testEnd, shareCount, Investment):
+def Test(TopSpecies, testStart, testEnd):
     for x in range(1):
+        try:
+            with open('bList.csv', 'rb') as csvfile:
+                balance = []
+                for row in csvfile:
+                    balance.append(float(row))
+            Investment = balance[-1]
+        except(IndexError):
+            print "yikes"
+            Investment = 100000
+
         stockList=["LUV"]
         avg=[]
         mx=[]
@@ -25,7 +36,6 @@ def Test(TopSpecies, testStart, testEnd, shareCount, Investment):
         g=[]
         TOPV=0
         Graph = []
-        
     
                 
         Environment = Strategy(stockList)
@@ -40,9 +50,10 @@ def Test(TopSpecies, testStart, testEnd, shareCount, Investment):
         
     #Make Portfolios
     
-        for individual in range(numSpecies):
-            Environment.addPortfolio("p"+str(individual),pInvest)
-            
+        Environment.addPortfolio("p0",pInvest)
+        Environment.getPortfolios()["p0"] = TopSpecies
+        Environment.getPortfolios()["p0"].reset(Investment)
+        
     
     #Set inputList
     
@@ -82,17 +93,16 @@ def Test(TopSpecies, testStart, testEnd, shareCount, Investment):
             weight.append(round(z,3))
              
     #Construct test population
-        for portfolio in Environment.getPortfolios().keys():
-            p = Environment.getPortfolios()[portfolio]
-            p.addSpecies(inputs)
+        # for portfolio in Environment.getPortfolios().keys():
+        #     p = Environment.getPortfolios()[portfolio]
+        #     p.addSpecies(inputs)
             
-        for gene in TopSpecies:
-            Environment.getPortfolios()['p0'].getSpecies().addGene(TopSpecies[gene].left,TopSpecies[gene].right, TopSpecies[gene].delimeter, TopSpecies[gene].weight)
+        # for gene in TopSpecies:
+        #     Environment.getPortfolios()['p0'].getSpecies().addGene(TopSpecies[gene].left,TopSpecies[gene].right, TopSpecies[gene].delimeter, TopSpecies[gene].weight)
                 
     # Start loop of days and generations     
         
         for day in range(startDay, DAYS):
-            print "day", day
             inputs=inputList[day]  
             startPrice=startPriceList[day]
             endPrice=endPriceList[day] 
@@ -104,15 +114,15 @@ def Test(TopSpecies, testStart, testEnd, shareCount, Investment):
                     Environment.getPortfolios()[portfolio].getSpecies().getGenes()[gene].makeBoolean(inputs)    
                     
 # Get species output and add corresponding behavior
-
-            Environment.getPortfolios()["p0"].addBehavior(Environment.getPortfolios()[portfolio].getSpecies().getOutput() > Environment.getPortfolios()[portfolio].getSpecies().getRightThresh() , ("Buy", "LUV",int(Environment.getPortfolios()[portfolio].getShareFactor()*(Environment.getPortfolios()[portfolio].getBalance()/(0.0+startPrice))),startPrice))
-            Environment.getPortfolios()["p0"].addBehavior(Environment.getPortfolios()[portfolio].getSpecies().getOutput() < Environment.getPortfolios()[portfolio].getSpecies().getLeftThresh(), ("Short", "LUV",int(Environment.getPortfolios()[portfolio].getShareFactor()*(Environment.getPortfolios()[portfolio].getBalance()/(0.0+startPrice))),startPrice))
-            Environment.getPortfolios()["p0"].addGeneCorrect(endPrice-startPrice)
+        portfolio = "p0"
+        print Environment.getPortfolios()[portfolio].getSpecies().getRightThresh(),"right"
+        Environment.getPortfolios()[portfolio].addBehavior(Environment.getPortfolios()[portfolio].getSpecies().getOutput() > Environment.getPortfolios()[portfolio].getSpecies().getRightThresh() , ("Buy", "LUV",int(Environment.getPortfolios()[portfolio].getShareFactor()*(Environment.getPortfolios()[portfolio].getBalance()/(0.0+startPrice))),startPrice))
+        Environment.getPortfolios()[portfolio].addBehavior(Environment.getPortfolios()[portfolio].getSpecies().getOutput() < Environment.getPortfolios()[portfolio].getSpecies().getLeftThresh(), ("Short", "LUV",int(Environment.getPortfolios()[portfolio].getShareFactor()*(Environment.getPortfolios()[portfolio].getBalance()/(0.0+startPrice))),startPrice))
+        Environment.getPortfolios()[portfolio].addGeneCorrect(endPrice-startPrice)
 #Go through with actions, sellBack at end of day and add balance to balanceList
-
-            Environment.getPortfolios()["p0"].makeActions(startPrice)
-            Environment.getPortfolios()["p0"].sellBack(stockList,endPrice)
-            Environment.getPortfolios()["p0"].addBalance(Environment.getPortfolios()[portfolio].balance)  
+        Environment.getPortfolios()[portfolio].makeActions(startPrice)
+        Environment.getPortfolios()[portfolio].sellBack(stockList,endPrice)
+        Environment.getPortfolios()[portfolio].addBalance(Environment.getPortfolios()[portfolio].balance)  
 
             # for gene in Environment.getPortfolios()["p0"].getGeneCorrect():
             #     Environment.getPortfolios()["p0"].getGeneCorrect()[gene]=average(Environment.getPortfolios()["p0"].getGeneCorrect()[gene])
@@ -129,8 +139,6 @@ def Test(TopSpecies, testStart, testEnd, shareCount, Investment):
             # plt.show()
     #Add balanceList to graph
         
-        for portfolio in Environment.getPortfolios().keys():
-            print Environment.getPortfolios()[portfolio].getBalanceList()
 
         for portfolio in Environment.getPortfolios().keys():
             fitness[portfolio]=Environment.getPortfolios()[portfolio].balanceList[-1]
@@ -141,14 +149,21 @@ def Test(TopSpecies, testStart, testEnd, shareCount, Investment):
             TOP=sorted_fitness[-1][0]
             TOPV=sorted_fitness[-1][1]
                 
-        print "TEST DAY        : " , DAYS
-        print "TEST CORRECT    : " , (Environment.getPortfolios()["p0"].getCorrectList().count(1)*1.0)/len(Environment.getPortfolios()["p0"].getCorrectList())
-        print "TEST INCORRECT  : " , (Environment.getPortfolios()["p0"].getCorrectList().count(-1)*1.0)/len(Environment.getPortfolios()["p0"].getCorrectList())
-        print "TEST HELD       : " , (Environment.getPortfolios()["p0"].getCorrectList().count(0)*1.0)/len(Environment.getPortfolios()["p0"].getCorrectList())
-        print "TEST GUESSED    : " , (Environment.getPortfolios()["p0"].getCorrectList().count(1)+Environment.getPortfolios()["p0"].getCorrectList().count(-1)*1.0)/len(Environment.getPortfolios()["p0"].getCorrectList())
-        print "TEST BALANCE    : " ,  Environment.getPortfolios()["p0"].getBalanceList()[-1]
+        print "TEST DAY        : ", DAYS
+        print "TEST CORRECT    : ", (Environment.getPortfolios()["p0"].getCorrectList().count(1)*1.0)/len(Environment.getPortfolios()["p0"].getCorrectList())
+        print "TEST INCORRECT  : ", (Environment.getPortfolios()["p0"].getCorrectList().count(-1)*1.0)/len(Environment.getPortfolios()["p0"].getCorrectList())
+        print "TEST HELD       : ", (Environment.getPortfolios()["p0"].getCorrectList().count(0)*1.0)/len(Environment.getPortfolios()["p0"].getCorrectList())
+        print "TEST GUESSED    : ", (Environment.getPortfolios()["p0"].getCorrectList().count(1)+Environment.getPortfolios()["p0"].getCorrectList().count(-1)*1.0)/len(Environment.getPortfolios()["p0"].getCorrectList())
+        print "LEFT THRESH     : ", Environment.getPortfolios()[portfolio].getSpecies().getLeftThresh()
+        print "RIGHT THRESH    : ", Environment.getPortfolios()[portfolio].getSpecies().getRightThresh()                   
+        print "SHARE FACTOR    : ", Environment.getPortfolios()[portfolio].getShareFactor()
+        print "OUTPUT          : ", Environment.getPortfolios()[portfolio].getSpecies().getOutput()
+        print "INVESTMENT      : ", Investment
+        print "TEST BALANCE    : ", Environment.getPortfolios()["p0"].getBalanceList()[-1]
+        print "DAY CHANGE      : ", endPrice-startPrice
+        print "DAY PROFIT      : ", Environment.getPortfolios()["p0"].getBalanceList()[-1]-Investment
 
-        return ((Environment.getPortfolios()["p0"].getCorrectList().count(1)*1.0)/(len(Environment.getPortfolios()["p0"].getCorrectList()))),Environment.getPortfolios()["p0"].getBalanceList()[-1]
+        return  [(Environment.getPortfolios()["p0"].getCorrectList().count(1)*1.0)/len(Environment.getPortfolios()["p0"].getCorrectList()), Environment.getPortfolios()["p0"].getBalanceList()[-1]]
 
 if __name__ == '__main__':
     IndividualTester(TopSpecies)
